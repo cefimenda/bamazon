@@ -14,19 +14,27 @@ function Table(name) {
     this.connect = function () {
         this.connection = mysql.createConnection(this.config)
     };
-    this.print = function () {
-        var query = "SELECT * FROM ?? LIMIT ?";
-        this.connection.query(query, [this.name, 100], function (err, res) {
-            if (err) { console.log(err) }
-            console.table(res)
-        });
+    this.print = function (input) {
+        return new Promise((resolve, reject) => {
+            var query = "SELECT ?? FROM ?? LIMIT ?";
+            var filter = input || "*"
+
+            this.connection.query(query, [filter,this.name, 100], function (err, res) {
+                if (err) {
+                    console.log(err)
+                    reject(err)
+                }
+                console.table(res)
+                resolve()
+            });
+        })
     };
     this.getItem = function (column, target, comparison) {
         return new Promise((resolve, reject) => {
-            var compare = comparison || "=" 
-            if (compare === "="){
+            var compare = comparison || "="
+            if (compare === "=") {
                 var query = "SELECT * FROM ?? WHERE ?? = ?";
-            }else if (compare ==="<"){
+            } else if (compare === "<") {
                 var query = "SELECT * FROM ?? WHERE ?? < ?";
             }
             this.connection.query(query, [this.name, column, target], function (err, res) {
@@ -44,8 +52,19 @@ function Table(name) {
             if (err) { console.log(err) }
         });
     };
-    this.newItem = function (){
-        
+    this.newItem = function (name, department, price, stock) {
+        return new Promise((resolve, reject) => {
+            if (this.name === "products") {
+                var query = "INSERT INTO products (product_name,department_name,price,stock_quantity) values (?,?,?,?);";
+                this.connection.query(query, [name, department, price, stock], function (err, res) {
+                    if (err) {
+                        console.log(err)
+                        reject(err)
+                    }
+                    resolve(stock+" "+name+"s have been successfully added to inventory as a new product under the "+department+" department.")
+                })
+            }
+        })
     }
 }
 
