@@ -2,21 +2,20 @@ const mysql = require("mysql");
 const cTable = require('console.table');
 const Table = require('./database')
 const inquirer = require('inquirer')
-var deptList = []
-var products = new Table("products")
-products.connect()
+let deptList = []
+const products = new Table("products")
 
+products.connect()
 console.log("Welcome back Bamazon Manager, I hope you're having a great day\n")
 
-
-
+//Main Sequence
 function selectAction() {
     inquirer.prompt([
         {
             type: 'list',
             name: 'action',
             message: 'How can we help you today?',
-            choices: ["View Products for Sale", "View Low Inventory", "Edit Item", "Add to Inventory", "Add New Product", "Quit"]
+            choices: ["View Products for Sale", "View Low Inventory", "Add to Inventory", "Add New Product", "Edit Item", "Delete Item", "Quit"]
         }
     ]).then(function (response) {
         if (response.action === "View Products for Sale") {
@@ -33,6 +32,8 @@ function selectAction() {
             addNew()
         } else if (response.action === "Edit Item") {
             editItem()
+        } else if (response.action === "Delete Item") {
+            deleteItem()
         }
         else if (response.action === "Quit") {
             console.log("Thank you for being a valued employee of Bamazon. We hope to see you again!")
@@ -41,6 +42,8 @@ function selectAction() {
         }
     })
 }
+
+//Action Functions
 function lowInventory() {
     products.getItem("stock_quantity", "5", "<").then((response) => {
         console.table(response)
@@ -138,7 +141,32 @@ function editItem() {
         selectAction()
     })
 }
+function deleteItem() {
+    inquirer.prompt([
+        {
+            type: "input",
+            message: "Enter the ID number of the product you would like to delete.",
+            name: "id"
+        },
+        {
+            type: "confirm",
+            message: "Are you sure you want to delete all instances of this product?",
+            name: "confirm"
+        }
+    ]).then(function (response) {
+        if (response.confirm === true) {
+            products.deleteItem("item_id", response.id).then(function (result) {
+                console.log(result)
+                selectAction()
+            })
+        } else {
+            console.log("The product with ID number " + response.id + " has NOT been deleted.")
+            selectAction()
+        }
+    })
+}
 
+//Other Functions
 function numberValidate(input) {
     var isValid = !isNaN(parseFloat(input));
     return isValid || "Your input should be a number!";

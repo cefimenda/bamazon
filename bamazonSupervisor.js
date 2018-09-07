@@ -17,17 +17,34 @@ function selectAction() {
             type: 'list',
             name: 'action',
             message: 'How can I help you today sir?',
-            choices: ["View Product Sales by Department", "Create New Department",  "Quit"]
+            choices: ["View Product Sales by Department", "Create New Department", "Quit"]
         }
     ]).then(function (response) {
         if (response.action === "View Product Sales by Department") {
             console.log("Here are the items we have in stock today:")
-            departments.print().then(function () {
+            departments.managerView().then(function (table) {
+                console.table(table)
                 selectAction()
             })
         } else if (response.action === "Create New Department") {
-            console.log("Coming Soon")
-            selectAction()
+            inquirer.prompt([
+                {
+                    type: "input",
+                    name:"name",
+                    message:"Please enter the name of the new department you would like to create."
+                },
+                {
+                    type:"input",
+                    name:"overhead",
+                    message:"Please enter the overhead cost amount for this department.",
+                    validate:numberValidate
+                }
+            ]).then(function (response){
+                departments.newItem(response.name,response.overhead).then(function(message){
+                    console.log(message)
+                    selectAction()
+                })
+            })
         }
         else if (response.action === "Quit") {
             console.log("Thank you for making this world a better place Mr. Supervisor. I sincerely hope I will get to perform the tasks you assign me once again in the near future!")
@@ -38,3 +55,8 @@ function selectAction() {
     })
 }
 selectAction()
+
+function numberValidate(input) {
+    var isValid = !isNaN(parseFloat(input));
+    return isValid || "Your input should be a number!";
+}
