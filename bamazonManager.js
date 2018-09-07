@@ -2,11 +2,13 @@ const mysql = require("mysql");
 const cTable = require('console.table');
 const Table = require('./database')
 const inquirer = require('inquirer')
-
+var deptList = []
 var products = new Table("products")
 products.connect()
 
 console.log("Welcome back Bamazon Manager, I hope you're having a great day\n")
+
+
 
 function selectAction() {
     inquirer.prompt([
@@ -50,7 +52,8 @@ function addToInventory() {
         {
             type: "input",
             name: "id",
-            message: "Enter the ID of product that you want to add to inventory."
+            message: "Enter the ID of product that you want to add to inventory.",
+            validate: numberValidate
         },
         {
             type: "input",
@@ -60,6 +63,11 @@ function addToInventory() {
         }
     ]).then(function (response) {
         products.getItem("item_id", response.id).then((item) => {
+            if (item.length == 0) {
+                console.log("Invalid Id Number. Try Again.")
+                selectAction()
+                return
+            }
             products.changeTable("stock_quantity", Number(response.amount) + Number(item[0].stock_quantity), "item_id", response.id)
             console.log("Great! You have successfully added " + response.amount + " new " + item[0].product_name + "s to inventory.")
             selectAction()
@@ -67,6 +75,7 @@ function addToInventory() {
     })
 }
 function addNew() {
+    updateDepartments()
     inquirer.prompt([
         {
             type: "input",
@@ -74,9 +83,10 @@ function addNew() {
             message: "Enter the name of the product that you will be adding"
         },
         {
-            type: "input",
+            type: "list",
             name: "department",
-            message: "What department does this product belong to?"
+            message: "What department does this product belong to?",
+            choices: deptList
         },
         {
             type: "input",
@@ -98,39 +108,47 @@ function addNew() {
     })
 }
 function editItem() {
-inquirer.prompt([
-    {
-        type:"input",
-        message:"Enter the id number of the item you would like to edit",
-        name: "id"
-    },
-    {
-        type:"list",
-        message:"What section would you like to change?",
-        name:"column",
-        choices:["product_name","department_name","price","stock_quantity"]
-    },
-    {
-        type:"input",
-        message:"What is the new value for this section?",
-        name:"value",
-    }
-]).then(function(response){
-    if (response.column ==="price"||response.column==="stock_quantity"){
-        if (typeof numberValidate(response.value) === "string"){
-            console.log("Expected input for this category is a number. Please try again.")
-            selectAction()
-            return
+    inquirer.prompt([
+        {
+            type: "input",
+            message: "Enter the id number of the item you would like to edit",
+            name: "id"
+        },
+        {
+            type: "list",
+            message: "What section would you like to change?",
+            name: "column",
+            choices: ["product_name", "price", "stock_quantity"]
+        },
+        {
+            type: "input",
+            message: "What is the new value for this section?",
+            name: "value",
         }
-    }
-    products.changeTable(response.column,response.value,"item_id",response.id)
-    console.log("You have successfully changed item with ID "+response.id+" to have a "+response.column+" value of "+response.value+".")
-    selectAction()
-})
+    ]).then(function (response) {
+        if (response.column === "price" || response.column === "stock_quantity") {
+            if (typeof numberValidate(response.value) === "string") {
+                console.log("Expected input for this category is a number. Please try again.")
+                selectAction()
+                return
+            }
+        }
+        products.changeTable(response.column, response.value, "item_id", response.id)
+        console.log("You have successfully changed item with ID " + response.id + " to have a " + response.column + " value of " + response.value + ".")
+        selectAction()
+    })
 }
 
 function numberValidate(input) {
     var isValid = !isNaN(parseFloat(input));
     return isValid || "Your input should be a number!";
+}
+function updateDepartments() {
+    deptList = []
+    products.getDepartments().then(function (depts) {
+        for (var i in depts) {
+            deptList.push(depts[i].department_name)
+        }
+    })
 }
 selectAction()

@@ -18,7 +18,6 @@ function Table(name) {
         return new Promise((resolve, reject) => {
             var query = "SELECT ?? FROM ?? LIMIT ?";
             var filter = input || "*"
-
             this.connection.query(query, [filter,this.name, 100], function (err, res) {
                 if (err) {
                     console.log(err)
@@ -64,6 +63,18 @@ function Table(name) {
                     resolve(stock+" "+name+"s have been successfully added to inventory as a new product under the "+department+" department.")
                 })
             }
+        })
+    };
+    this.getDepartments = function (){
+        return new Promise((resolve,reject)=>{
+            var query = "SELECT DISTINCT department_name FROM departments"
+            this.connection.query(query,function(err,res){
+                if (err){
+                    console.log(err)
+                    reject(err)
+                }
+                resolve(res)
+            })
         })
     }
 }
