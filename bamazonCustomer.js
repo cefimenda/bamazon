@@ -3,19 +3,9 @@ const cTable = require('console.table');
 const Table = require('./database')
 const inquirer = require('inquirer')
 
-// EXAMPLE SEQUENCE TO TEST OUT OUR TABLE CONSTRUCTOR
-// var products = new Table("products")
-// products.connect()
-// products.print()
-// products.getItem("product_name","Playstation")
-// products.changeTable("stock_quantity",10,"product_name","TV")
-// products.connection.end()
-
 
 var products = new Table("products")
 products.connect()
-// products.getItem("product_name","Playstation")
-// products.connection.end()
 console.log("Welcome to Bamazon! \n")
 function selectAction() {
     inquirer.prompt([

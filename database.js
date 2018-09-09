@@ -114,17 +114,3 @@ function Table(name) {
 
 
 module.exports = Table
-
-
-
-
-
-// EXAMPLE SEQUENCE TO TEST OUT OUR TABLE CONSTRUCTOR
-// var products = new Table("products")
-// products.connect()
-// products.print()
-// products.getItem("product_name","Playstation")
-// products.changeTable("stock_quantity",10,"product_name","TV")
-// products.connection.end()
-
-
